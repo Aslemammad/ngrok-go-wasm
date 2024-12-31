@@ -16,6 +16,7 @@ require (
 )
 
 require (
+	github.com/coder/websocket v1.8.12 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/inconshreveable/log15 v3.0.0-testing.5+incompatible // indirect
@@ -24,4 +25,5 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/term v0.25.0 // indirect
+	marwan.io/wasm-fetch v0.1.0 // indirect
 )

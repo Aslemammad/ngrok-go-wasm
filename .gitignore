@@ -4,3 +4,5 @@
 *.swp
 cover.out
 .idea/*
+dist/
+*.wasm

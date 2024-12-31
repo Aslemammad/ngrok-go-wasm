@@ -83,7 +83,7 @@ func (s *rawSession) Auth(id string, extra proto.AuthExtra) (resp proto.AuthResp
 	if err = s.rpc(proto.AuthReq, &req, &resp); err != nil {
 		return
 	}
-
+	fmt.Println("resp", resp)
 	// set client id / log tag only if it changed
 	if s.id != resp.ClientID {
 		s.id = resp.ClientID

@@ -1,6 +1,7 @@
 package ngrok
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
@@ -12,9 +13,13 @@ import (
 	"strings"
 	"sync"
 
+	// "marwan.io/wasm-fetch"
+
 	"github.com/inconshreveable/log15/v3"
 	"golang.org/x/sync/errgroup"
 )
+
+var isWasm bool // false by default
 
 // Forwarder is a tunnel that has every connection forwarded to some URL.
 type Forwarder interface {
@@ -94,17 +99,69 @@ func forwardTunnel(ctx context.Context, tun Tunnel, url *url.URL) Forwarder {
 
 			go func() {
 				ngrokConn := conn.(Conn)
+				defer fwdTasks.Done()
 
-				backend, err := openBackend(ctx, logger, tun, ngrokConn, url)
-				if err != nil {
-					defer ngrokConn.Close()
-					logger.Warn("failed to connect to backend url", "error", err)
-					fwdTasks.Done()
-					return
+				fmt.Println("isWasm", isWasm)
+				if !isWasm {
+					backend, err := openBackend(ctx, logger, tun, ngrokConn, url)
+					if err != nil {
+						defer ngrokConn.Close()
+						logger.Warn("failed to connect to backend url", "error", err)
+						return
+					}
+
+					join(logger.New("url", url), ngrokConn, backend)
+				} else {
+					// Read the original request
+					httpReq, err := http.ReadRequest(bufio.NewReader(conn))
+					fmt.Println("httpReq", httpReq)
+					if err != nil {
+						logger.Warn("failed to read request", "error", err)
+						return
+					}
+
+					// res, err := fetch.Fetch(url.String()+httpReq.URL.String(), &fetch.Opts{})
+					// if err != nil {
+					// 	logger.Warn("failed to fetch", "error", err)
+					// 	return
+					// }
+					// fRes := http.Response{
+					// 	StatusCode: res.Status,
+					// 	Body: io.NopCloser(bytes.NewBuffer(res.Body)),
+					// 	Header: http.Header(res.Headers),
+					// }
+					// fmt.Println("res", res)
+
+					// Create a new request instead of modifying the original
+					outReq, err := http.NewRequest(
+						httpReq.Method,
+						url.String()+httpReq.URL.String(),
+						httpReq.Body,
+					)
+					if err != nil {
+						logger.Warn("failed to create new request", "error", err)
+						return
+					}
+
+					// Copy the headers from the original request
+					outReq.Header = httpReq.Header.Clone()
+
+					// Make the request
+					client := http.DefaultClient
+					fmt.Println("befre fetch", outReq)
+					fetchRes, err := client.Do(outReq)
+					fmt.Println("fetchRes", fetchRes)
+					if err != nil {
+						fmt.Println("err", err)
+						logger.Warn("failed to make request", "error", err)
+						return
+					}
+					defer fetchRes.Body.Close()
+					if fetchRes.Write(conn) != nil {
+						logger.Warn("failed to write response", "error", err)
+						return
+					}
 				}
-
-				join(logger.New("url", url), ngrokConn, backend)
-				fwdTasks.Done()
 			}()
 		}
 	})
@@ -199,4 +256,9 @@ func isHTTP(scheme string) bool {
 	default:
 		return false
 	}
+}
+
+// SetWasm sets the wasm flag
+func SetWasm(w bool) {
+	isWasm = w
 }

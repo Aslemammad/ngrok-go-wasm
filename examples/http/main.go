@@ -23,6 +23,7 @@ func run(ctx context.Context) error {
 		config.HTTPEndpoint(),
 		ngrok.WithAuthtokenFromEnv(),
 	)
+	fmt.Println("ln", ln)
 	if err != nil {
 		return err
 	}

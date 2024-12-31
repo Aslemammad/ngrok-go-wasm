@@ -23,3 +23,7 @@ docs:
 .PHONY: gen-proto
 gen-proto:
 	protoc --go_out=. --go_opt=module=golang.ngrok.com/ngrok ./internal/pb/middleware.proto
+
+wasm:
+	mkdir -p dist
+	./scripts/build_wasm.sh

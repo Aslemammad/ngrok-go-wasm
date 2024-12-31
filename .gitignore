@@ -6,3 +6,4 @@ cover.out
 .idea/*
 dist/
 *.wasm
+examples/wasm/static

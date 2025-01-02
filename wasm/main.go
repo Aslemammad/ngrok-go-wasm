@@ -58,12 +58,7 @@ func listenAndForward(this js.Value, args []js.Value) interface{} {
 	fmt.Println("opts", opts)
 	addr := opts.Get("addr")
 	authtoken := opts.Get("authtoken")
-	server_addr := opts.Get("server_addr")
 	hostname := opts.Get("hostname")
-	if server_addr.IsUndefined() {
-		server_addr = js.ValueOf("connect.ngrok-agent.com:443")
-	}
-	fmt.Println("server_addr", server_addr)
 	fmt.Println("addr", addr)
 	fmt.Println("authtoken", authtoken)
 	fmt.Println("hostname", hostname)
@@ -80,11 +75,12 @@ func listenAndForward(this js.Value, args []js.Value) interface{} {
 				err  error
 			}, 1)
 
-			// Create a context with timeout
 			ctx := context.Background()
 
 			go func() {
-				conn, err := dialWebsocket(ctx, "ws://localhost:8787")
+				// https://expo-sb-worker.sb-labs-staging.workers.dev
+				conn, err := dialWebsocket(ctx, "ws://expo-sb-worker.sb-labs-staging.workers.dev")
+				// conn, err := dialWebsocket(ctx, "ws://localhost:8787")
 				if err != nil {
 					fmt.Println("err", err)
 				}

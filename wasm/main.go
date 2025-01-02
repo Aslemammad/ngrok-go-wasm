@@ -79,7 +79,7 @@ func listenAndForward(this js.Value, args []js.Value) interface{} {
 
 			go func() {
 				// https://expo-sb-worker.sb-labs-staging.workers.dev
-				conn, err := dialWebsocket(ctx, "ws://expo-sb-worker.sb-labs-staging.workers.dev")
+				conn, err := dialWebsocket(ctx, "wss://expo-sb-worker.sb-labs-staging.workers.dev")
 				// conn, err := dialWebsocket(ctx, "ws://localhost:8787")
 				if err != nil {
 					fmt.Println("err", err)
